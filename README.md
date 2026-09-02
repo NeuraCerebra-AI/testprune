@@ -62,7 +62,7 @@ Both are measured single cases, not benchmarks. Your suite's numbers will differ
 
 ## 🧹 The problem
 
-- **Slow suites get skipped.** A check nobody runs protects nothing, and the wait compounds every time you touch the code.
+- **Slow suites get skipped.** A check nobody runs protects nothing, and you pay the wait again on every edit.
 - **Green stops meaning anything.** A suite that certifies a deprecated or parallel implementation is worse than no suite, because passing tells you nothing about what users run.
 - **Red stops meaning anything.** Once a wall of stale failures is normal, everyone learns to scroll past it, and the real regression scrolls past too.
 - **Agents pay the worst price.** A coding agent re-runs the suite on every iteration, reads the same stale failures every time, and burns its context window on output that never changes.
@@ -79,7 +79,7 @@ scripts/run_test_gates.sh broad             # everything provider-free, before a
 
 <img src="assets/gates.svg" alt="Test gate layers before and after: a 24 minute whole-suite run with 186 failures becomes a fast gate of an explicit file list with zero known failures at 10 seconds, a subsystem gate for one owning boundary that was not separately measured, and a broad provider-free gate at 10 minutes with 33 classified pre-existing failures. Measured on one repository, not a benchmark." width="100%">
 
-Here is the policy block it wrote into `CLAUDE.md` and `AGENTS.md` in the repository this Skill was built on, so the next agent session reaches for the fast gate instead of the whole suite:
+Here are three of the seven lines it wrote into `CLAUDE.md` and `AGENTS.md` in the first repository, so the next agent session reaches for the fast gate instead of the whole suite:
 
 ```markdown
 ## Test suite policy
@@ -124,7 +124,7 @@ Then, in a session opened on the repository you want cleaned:
 /testprune followups       # execute the items a prior pass deferred, budget about forty-five minutes
 ```
 
-Start with `prompt-first` if you'd rather read the plan before anything is deleted. It produces a repo-specific audit prompt and a companion follow-up prompt, and it touches no test.
+Start with `prompt-first` if you'd rather read the plan before anything is deleted. It writes a repo-specific audit prompt and a companion follow-up prompt, runs the suite once for a baseline only if that is safe offline, and touches no test.
 
 Requirements: a client that supports Agent Skills (Claude Code or Codex CLI, for example), `git`, `bash` 3.2 or newer for the gate script, and Python 3.7 or newer for the inventory script. The Skill itself is language-agnostic; only that one helper script needs Python.
 
@@ -187,13 +187,13 @@ Two caveats, stated plainly because they matter. That paper evaluates a dependen
 Make the routine check a short, explicit list of files with zero known failures, and write that command into `CLAUDE.md` or `AGENTS.md` as the default. testprune builds that list, measures it, and writes the policy. The fast gate is an explicit file list rather than a glob or a marker, because a glob drifts and can wander into an ignored, live, or environment-dependent test.
 
 **Is it safe to let an AI delete my tests?**
-Deletions are recoverable and the run is auditable, which is the honest version of "safe". Tracked tests go with `git rm` and the ledger records the commit hash you restore from. Untracked tests move to a gitignored archive rather than being deleted, because that operation isn't reversible. In Claude Code it is user-invoked only (`disable-model-invocation: true` in `SKILL.md`), so Claude can't start it on its own. To read the plan before anything moves, run `/testprune prompt-first`, which changes nothing.
+Deletions are recoverable and the run is auditable, which is the honest version of "safe". Tracked tests go with `git rm` and the ledger records the commit hash you restore from. Untracked tests move to a gitignored archive rather than being deleted, because that operation isn't reversible. In Claude Code it is user-invoked only (`disable-model-invocation: true` in `SKILL.md`), so Claude can't start it on its own. To read the plan before anything moves, run `/testprune prompt-first`. It writes two prompt files and deletes nothing.
 
 **How do I know which tests are safe to delete?**
 A test becomes a deletion candidate when it exercises an implementation that production doesn't route through, or when it pins wording, numbering, pricing, or model names that the source is expected to keep changing. Both require naming the production path first, with file-level proof. A test that is merely failing is not a candidate: a permanently red test whose expectation can't be corrected with source authority is left red and listed rather than quietly removed.
 
 **Does it work with Jest, Vitest, Go, or Rust, or only pytest?**
-testprune is language-agnostic in design. The gate script template takes any runner (`npx jest --`, `go test`, `cargo test --`, `python -m pytest`), and the inventory script recognizes pytest, Jest, Vitest, Go, Rust, and Ruby naming conventions out of the box. The examples throughout the reference files are Python and pytest because that's the stack it was built on, so on other stacks expect to adapt commands rather than concepts.
+testprune is language-agnostic in design. The gate script template takes any runner (`npx jest --`, `go test`, `cargo test --`, `python -m pytest`), and the inventory script recognizes pytest, Jest, Vitest, Go, Rust, and Ruby naming conventions out of the box. The reference snippets are pytest and Vitest, and one of the two repositories it was built on ran through `npm test`, so on a third stack expect to adapt commands rather than concepts.
 
 **How is this different from Launchable or pytest-testmon?**
 Those tools decide which of your existing tests to run for a given commit, every commit, forever. testprune decides which tests should exist at all, once. A selection tool treats a deprecated-path test as an equally legitimate candidate to run; it has no opinion about whether that test deserves to be in the repository. The two are complementary, and a selection tool works better on a suite that's already been cleaned.
@@ -229,7 +229,7 @@ Every rule in `SKILL.md` traces back to something that went wrong in one of thos
 
 ## 🤝 Contributing and license
 
-Issues and pull requests are welcome, particularly reports from stacks other than Python and pytest, since that's where the reference examples are thinnest. If a rule fails you in a real repository, the most useful thing you can open is the case that broke it.
+Issues and pull requests are welcome, particularly reports from stacks other than Python and JavaScript, since that's where the reference examples are thinnest. If a rule fails you in a real repository, the most useful thing you can open is the case that broke it.
 
 Released under the [MIT License](LICENSE).
 

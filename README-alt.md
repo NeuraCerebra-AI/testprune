@@ -26,11 +26,11 @@ Works in Claude Code, Codex CLI, and any client that implements the [Agent Skill
 
 ## ⏱️ What you get back
 
-It was measured on two private repositories. The first was the heavier cleanup. The second is where the routine check was timed, and one cycle there means one edit followed by that check. Before the run the check took 41.90 s. After it, 2.72 s. That's 39.18 s back per cycle, a 93.5% cut, 15.4x faster.
+It was measured on two private repositories: the first was the heavier cleanup, the second is where the routine check was timed. One cycle there is one edit followed by that check. Before the run the check took 41.90 s. After it, 2.72 s. That's 39.18 s back per cycle: feedback latency cut 93.5%, 15.4x faster.
 
 <img src="assets/time-saved.svg" alt="Test suite cleanup time saved in one measured repository: three tiles read 2.72 seconds where it was 41.90, 15.4x faster as a 93.5 percent cut, and 6 minutes 32 seconds of waiting removed across ten cycles, above a paired bar of 6 minutes 59 seconds against 27.2 seconds. One case, not a benchmark." width="100%">
 
-| Cycles | Before | After | Saved |
+| Edit and test cycles | Before | After | Saved |
 | --- | ---: | ---: | ---: |
 | One | 41.90 s | 2.72 s | 39.18 s |
 | Five | 3m 30s | 13.6 s | 3m 16s |
@@ -38,6 +38,23 @@ It was measured on two private repositories. The first was the heavier cleanup. 
 | Twenty | 13m 58s | 54.4 s | 13m 04s |
 
 The saving is per cycle, so it scales with how often the check runs, and a coding agent runs it after every edit. In the second repository a session of ten cycles, one subsystem check, and one broad check before a push now takes about 2m 24s, less than the ten old checks alone. The broad gate stays at 111 s on purpose: it's the pre-push cost, not the routine one.
+
+<details><summary>The same ten cycles measured per work area in the second repository</summary>
+
+Ten cycles plus one subsystem check for that area, against ten of the old routine checks:
+
+| Work area | New total | Saved |
+| --- | ---: | ---: |
+| Runtime | 32.9 s | 6m 26s |
+| Research | 31.8 s | 6m 27s |
+| Artifacts | 35.9 s | 6m 23s |
+| Studio | 47.7 s | 6m 11s |
+| Responsible AI | 40.2 s | 6m 19s |
+| Environment | 50.8 s | 6m 08s |
+
+Six areas, all between 6m 08s and 6m 27s saved: the per-cycle figure isn't one lucky subsystem.
+
+</details>
 
 The first repository shows the same shape from a worse start: a 24-minute suite carrying 186 stale failures became a 10-second fast gate with zero failures and a 10-minute broad gate with 33 classified pre-existing failures.
 
@@ -59,17 +76,17 @@ Then, in a session opened on the repository you want cleaned:
 
 ```
 /testprune                 # audit and execute in this session, budget two hours
-/testprune prompt-first    # write a curated, repo-specific prompt and stop; changes nothing
+/testprune prompt-first    # write a curated, repo-specific prompt and stop; deletes nothing
 /testprune followups       # execute the high-blast-radius items a prior pass deferred, budget forty-five minutes
 ```
 
-Start with `prompt-first` if you'd rather read the plan before anything is deleted. It writes the audit prompt and a companion follow-up prompt, and it touches no test.
+Start with `prompt-first` if you'd rather read the plan before anything is deleted. It reads the repository for about forty-five minutes, writes the audit prompt and a companion follow-up prompt into the repo's results location (or `docs/`), runs the suite once for a baseline only when that's safe offline, and touches no test.
 
-Requirements: a client that supports Agent Skills, `git`, `bash` 3.2 or newer for the gate script, and Python for the one inventory script. The Skill itself is language-agnostic. In Claude Code it's user-invoked only (`disable-model-invocation: true` in `SKILL.md`), so the model can't start it on its own.
+Requirements: a client that supports Agent Skills, `git`, `bash` 3.2 or newer for the gate script, and Python 3.7 or newer for the inventory script, which uses only the standard library and the git CLI. The Skill itself is language-agnostic. In Claude Code it's user-invoked only (`disable-model-invocation: true` in `SKILL.md`), so the model can't start it on its own.
 
 ## 📋 What a run leaves behind
 
-Three gate commands, a policy block your agent reads first, and a ledger of every deletion with the commit hash that restores it. These are the commands written into the first repository; the run adapts the same template to yours:
+Three gate commands, a policy block your agent reads first, and a ledger of every deletion with the commit hash that restores it. The script has five modes (`fast`, `subsystem <name>`, `subsystems`, `broad`, `deprecated`); these are the three routine ones, as written into the first repository, and the run adapts the same template to yours:
 
 ```bash
 scripts/run_test_gates.sh fast              # explicit file list, zero known failures, seconds
@@ -77,9 +94,9 @@ scripts/run_test_gates.sh subsystem api     # one owning boundary
 scripts/run_test_gates.sh broad             # everything provider-free, before a push
 ```
 
-<img src="assets/gates.svg" alt="Layered test gates before and after testprune in the first repository: a before strip of one 24 minute suite with 186 failures, then three gate cards with their commands and measured times, a fast gate at 10 seconds with zero known failures, a subsystem gate for one owning boundary that was never timed on its own, and a broad gate at 10 minutes with 33 classified pre-existing failures." width="100%">
+<img src="assets/gates.svg" alt="Layered test gates before and after testprune in the first repository: a before strip of one 24 minute suite with 186 failures, then three gate cards with their commands and measured times: a fast gate at 10 seconds with zero known failures, a subsystem gate for one owning boundary that was never timed on its own, and a broad gate at 10 minutes with 33 classified pre-existing failures." width="100%">
 
-The fast gate is an explicit file list, never a glob or a marker, because a file list can't drift into an ignored, live, or environment-dependent test. The policy block goes into `CLAUDE.md` and `AGENTS.md`, identical except for the self-name, with the gate commands first in any commands list. This is the one the first repository got:
+The fast gate is an explicit file list, never a glob or a marker, because a file list can't drift into an ignored, live, or environment-dependent test. The policy block goes into `CLAUDE.md` and `AGENTS.md`, identical except for the self-name, with the gate commands first in any commands list. These are the first three of its seven lines in the first repository; the rest cover new-test placement, provider safety, retired-format rows, and the ledger:
 
 ```markdown
 ## Test suite policy
@@ -108,33 +125,33 @@ Twenty-three deprecated and historical test files went with `git rm`, four untra
 
 The run is an audit, then a set of decisions, then a measurement, following the 13-step checklist in [`SKILL.md`](SKILL.md). Four decisions carry the weight.
 
-**Production authority first.** From entrypoints, deploy config, CI, and config resolvers it names the one path real users hit, and names every deprecated or parallel implementation by file, with proof that production doesn't route through it. Only tests on that path may certify a change, and production is never changed to match a deprecated one.
+**Production authority first.** From entrypoints, deploy config, CI, and config resolvers it names the one path real users hit, and every deprecated or parallel implementation by file, with proof that production doesn't route through it. Only tests on that path may certify a change; production is never changed to match a deprecated one.
 
 **One bucket per test module.** Production coverage, deprecated-path coverage, historical or stale-intent, live/paid/credentialed, environment-dependent, duplicated, or untracked ad hoc. Classification is by what a test proves, not by the vocabulary in its fixtures: a test that inserts rows in a retired format and asserts they still open is production coverage, and it stays.
 
-<img src="assets/classify.svg" alt="How testprune classifies every test module into one of seven buckets, production coverage, deprecated-path coverage, historical or stale-intent, live paid credentialed, environment-dependent, duplicated, or untracked ad hoc, then routes each through a production authority check to one of three outcomes: keep, retarget first, or remove recoverably with git rm." width="100%">
+<img src="assets/classify.svg" alt="How testprune classifies every test module into one of seven buckets, production coverage, deprecated-path coverage, historical or stale-intent, live paid credentialed, environment-dependent, duplicated, or untracked ad hoc, then routes each through a production authority check to one of three outcomes: keep; retarget first; remove, recoverable. A footnote says a permanently red test with no source authority for a fix is left red and listed, not quietly removed." width="100%">
 
 **Retarget first, then delete.** A bad test can still be the only thing pinning a real guarantee. Each such invariant gets one focused test against the production path, in the repo's own offline harness and its neighbors' style, before the original goes.
 
-**Remove recoverably, never hide.** Tracked files go with `git rm` and the recovery hash lands in the ledger. Untracked files move to a gitignored archive, because deleting an untracked file can't be undone. Live tests get a marker and a credential self-skip and leave the automatic gates. A red test whose expectation can't be corrected with source authority stays red and gets listed. No skip markers, no root conftest skip machinery, no xfail-forever, because those keep the scrolling going instead of ending it.
+**Remove recoverably, never hide.** Tracked files go with `git rm` and the recovery hash lands in the ledger. Untracked files move to a gitignored archive, because deleting an untracked file can't be undone. Live tests get a marker and a credential self-skip and leave the automatic gates. A red test whose expectation can't be corrected with source authority stays red and gets listed. No skip markers, no root conftest skip machinery, no xfail-forever, because those preserve the scrolling. Before a test is renamed or deleted, the design documents are grepped for its exact title, because a document that names a test as certification is a contract.
 
-Before classification, [`scripts/test_inventory.py`](scripts/test_inventory.py) runs, because ignore rules control commits, not collection: in the first repository, 74 gitignored test modules still ran in every broad run and were invisible to anyone reading `git ls-files`.
+Two smaller steps explain two numbers above. [`scripts/test_inventory.py`](scripts/test_inventory.py) runs before classification because ignore rules control commits, not collection: in the first repository, 74 gitignored test modules still ran in every broad run, invisible to anyone reading `git ls-files`. And slow tests get a `time.sleep` spy instead of a guess from the test name: the two 70-second tests there were labeled as attach failures, but the wait was retry backoff in an upload helper two modules away plus a hard-coded 2-second poll, and patching it test-side cut them to 4 seconds with every assertion intact.
 
-Anything with high blast radius (production code, fixtures shared by many suites, prompt or schema mirrors, frozen artifacts, files dirty from other work) isn't executed. It's written into a follow-up prompt naming the claimants that disagree and the decision to make, and `/testprune followups` executes those items once the production authority for each is settled.
+Anything with high blast radius (production code, fixtures shared by many suites, prompt or schema mirrors, frozen artifacts, files dirty from other work) isn't executed. It's written into a follow-up prompt naming the claimants that disagree and the decision to make, and `/testprune followups` executes those items once the production authority for each is settled. Every follow-up pass also repoints whatever called the old default test command by name: in one of the two repositories, switching `npm test` to an eight-file fast gate silently changed what the release verifier ran until its pin was moved.
 
 ## 🚧 What it won't do
 
 These are rules in `SKILL.md`, copied verbatim into any prompt it writes.
 
 - **No runtime changes.** It never edits application logic to make a test pass, and it never deletes the deprecated implementation itself. The one production edit `followups` mode allows is comment-only, when a stale comment is the thing that's wrong, and the report says so.
-- **No paid calls.** No test that claims to be offline may reach a paid, networked, or credentialed service. Offline-looking tests that could are stubbed at the seam, and the run proves zero calls afterwards.
+- **No paid calls.** No test that claims to be offline may reach a paid, networked, or credentialed service. Offline-looking tests that could are stubbed at the seam, credential and mode variables are scrubbed at the runner's setup seam so an unknown path fails instead of paying, and the run proves zero calls afterwards with a cost-ledger scan.
 - **No destructive git.** It never runs `git restore`, `git checkout --`, `git reset --hard`, or `git stash`, and it doesn't commit unless you ask.
 - **No touching other work.** Files already dirty from other work in progress are reported, not edited.
 - **No invented numbers.** Every figure in the closing report comes from tool output, measured before and after.
 
 ## ⚖️ How it compares
 
-It's a one-time audit, not a service, and it loses two of the six rows below on purpose. If your suite is already fast and honest and you want fewer tests executed per commit, a selection tool fits better, and selection works better on a suite that's been cleaned.
+It's a one-time audit, not a service, and it loses two of the six rows below on purpose. If your suite is already fast and honest and you want fewer tests executed per commit, a selection tool fits better; selection also works better on a suite that's been cleaned.
 
 | | testprune | Predictive test selection<br>(Launchable, Nx affected, pytest-testmon, testtrim) | Flaky-test platforms<br>(Trunk.io, BuildPulse, Datadog) | Mutation testing<br>(Stryker, mutmut, PIT) |
 | --- | --- | --- | --- | --- |
@@ -158,16 +175,16 @@ Lost trust is the expensive part, because a suite nobody believes still costs it
 ## ❓ FAQ
 
 **How do I stop Claude Code from running the entire test suite on every small change?**
-Give Claude Code a faster default and say so in the file it reads first. Agents read `CLAUDE.md` or `AGENTS.md` before anything else, so a 10-second gate saves nobody time until that file points at it. testprune builds the fast gate, measures it, and writes the policy block with the gate commands first and the raw full-suite command marked as not a routine check.
+Give Claude Code a faster default and say so in the file it reads first. Agents read `CLAUDE.md` or `AGENTS.md` before anything else, so a 10-second gate saves nobody time until that file points at it. testprune builds and measures the fast gate, then writes the policy block with the gate commands first and the raw full-suite command marked as not a routine check.
 
 **Is it safe to let an AI agent delete tests?**
-Deletions are recoverable and the run is auditable, which is the honest version of safe. Tracked tests go with `git rm` and the ledger records the commit hash you restore from. Untracked tests move to a gitignored archive rather than being deleted, because that operation isn't reversible. To read the plan before anything moves, run `/testprune prompt-first`, which changes nothing.
+Deletions are recoverable and the run is auditable, which is the honest version of safe. Tracked tests go with `git rm` and the ledger records the commit hash you restore from. Untracked tests move to a gitignored archive, because deleting them isn't reversible. To read the plan before anything moves, run `/testprune prompt-first`, which deletes nothing.
 
 **Which tests does testprune consider safe to delete?**
-A test becomes a deletion candidate when it drives an implementation that production doesn't route through, or when it's permanently red or vacuous, and both require naming the production path first with file-level proof. Merely failing isn't enough: a red test whose expectation can't be corrected with cited source authority is left red and listed, and a test proving a retired data format still reads, refuses calmly, or migrates is production coverage and stays.
+A test becomes a deletion candidate when it drives an implementation that production doesn't route through, or when it's permanently red or vacuous, or when it pins wording, numbering, pricing, or model names the source is expected to keep changing. All of it waits on naming the production path first with file-level proof. Merely failing isn't enough: a red test with no source authority for a fix is left red and listed, and a test proving a retired data format still reads, refuses calmly, or migrates is production coverage and stays.
 
-**Does testprune work with Jest, Go, or Rust, or only pytest?**
-testprune is language-agnostic by design: the gate script template wraps whatever test command your repository already runs, and the inventory script covers any language. The worked examples in the reference files are Python and pytest, the stack it was built on, so on other stacks expect to adapt commands rather than concepts.
+**Does testprune work with Jest, Vitest, Go, or Rust, or only pytest?**
+testprune is language-agnostic: the gate script template takes any runner (`npx jest --`, `go test`, `cargo test --`, `python -m pytest`), and the inventory script recognizes pytest, Jest, Vitest, Go, Rust, and Ruby naming conventions out of the box. The reference snippets are pytest and Vitest, because one of the two repositories it was built on ran its suite through `npm test`; on Go, Rust, or Ruby expect to adapt commands rather than concepts.
 
 **What if I disagree with one of its decisions?**
 Every deletion is in the ledger with its recovery hash, and every corrected expectation with the source authority behind it. Restoring one file is `git show <hash>:path/to/test.py > path/to/test.py`. Items where the evidence wasn't conclusive are deferred with the competing claimants named, and neither side changes until you decide.
@@ -179,7 +196,7 @@ Every deletion is in the ledger with its recovery hash, and every corrected expe
 | [`SKILL.md`](SKILL.md) | The rules, the 13-step checklist, the execution model, and the safety rules |
 | [`references/rationale_and_pitfalls.md`](references/rationale_and_pitfalls.md) | Why each rule exists, and the failure mode behind it |
 | [`references/techniques.md`](references/techniques.md) | Sleep spy, durations, hunk-only staging, cost-ledger scan, archive move, allowlist edits, JSON validation |
-| [`references/gate_script_template.sh`](references/gate_script_template.sh) | The fast, subsystem, subsystems, broad, and deprecated gate script, bash 3.2 compatible |
+| [`references/gate_script_template.sh`](references/gate_script_template.sh) | The gate script with its five modes, `fast`, `subsystem`, `subsystems`, `broad`, and `deprecated`, bash 3.2 compatible |
 | [`references/agent_instruction_block.md`](references/agent_instruction_block.md) | The `CLAUDE.md` and `AGENTS.md` policy block, in JSON and Markdown forms |
 | [`references/prompt_creator.md`](references/prompt_creator.md) | Prompt-first mode |
 | [`references/followups_execution.md`](references/followups_execution.md) | Followups mode: the adjudication protocol, the four recurring shapes, the release-pipeline pin, and the red-flags table |
@@ -189,7 +206,7 @@ Every deletion is in the ledger with its recovery hash, and every corrected expe
 
 It was built from a real cleanup and hardened by a second one, both on private repositories. Every rule in `SKILL.md` traces back to something that went wrong in one of them, and the reasoning is in [`references/rationale_and_pitfalls.md`](references/rationale_and_pitfalls.md) so you can disagree with a rule on the merits rather than guessing at its intent.
 
-Issues and pull requests are welcome, especially reports from stacks other than Python, where the reference examples are thinnest. If a rule fails you in a real repository, the most useful thing you can open is the case that broke it.
+Issues and pull requests are welcome, especially reports from Go, Rust, or Ruby, where the reference snippets are thinnest. If a rule fails you in a real repository, the most useful thing you can open is the case that broke it.
 
 Released under the [MIT License](LICENSE).
 
