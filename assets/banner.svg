@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 430" width="1200" height="430" role="img" aria-labelledby="bt bd">
 <title id="bt">testprune</title>
-<desc id="bd">A dark panel showing the name testprune, its tagline, and the command slash testprune being typed at a prompt, with chips for the five things a run leaves behind: the fast gate, subsystem gates, the broad gate, the policy block it writes into CLAUDE.md and AGENTS.md, and the ledger of every deletion. On the right, two bars race in real time at the true measured ratio: the routine check an agent runs after every edit took 41.90 seconds before and 2.72 seconds after, so the grey before bar crawls across its track while the green after bar is finished almost at once. The result is stated beneath them: 15.4x faster, measured on one repository before and after.</desc>
+<desc id="bd">A dark panel showing the name testprune, its tagline, and the command slash testprune being typed at a prompt, with chips for the five things a run leaves behind: the fast gate, subsystem gates, the broad gate, the policy block it writes into CLAUDE.md and AGENTS.md, and the ledger of every deletion. On the right, two progress bars run the same check: the routine check an agent runs after every edit took 24 minutes before and 10 seconds after, so the grey before bar crawls across its track while the green after bar is finished almost at once. The result is stated beneath them: 144x faster, measured on one repository before and after.</desc>
 <style>
 .sans{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
 .mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace}
@@ -10,17 +10,17 @@
 .c1{animation-delay:1.9s}.c2{animation-delay:2s}.c3{animation-delay:2.1s}.c4{animation-delay:2.2s}.c5{animation-delay:2.3s}
 .typeclip{animation:typew 1.5s steps(10,end) .6s both}
 .cursor{animation:curs 1.5s steps(10,end) .6s both,blink 1.05s step-end 2.1s 6 both}
-.raceB{animation:runB 3.8s linear .9s both}
-.raceA{animation:runA .247s linear .9s both}
-.lateB{animation:fade .5s ease-out 4.7s both}
-.lateA{animation:fade .5s ease-out 1.15s both}
-.punch{animation:rise .7s ease-out 5.1s both}
+.raceB{animation:runB 4s linear .9s both}
+.raceA{animation:runA .028s linear .9s both}
+.lateB{animation:fade .5s ease-out 4.9s both}
+.lateA{animation:fade .5s ease-out .95s both}
+.punch{animation:rise .7s ease-out 5.3s both}
 @keyframes rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
 @keyframes typew{from{width:0px}to{width:122px}}
 @keyframes curs{from{transform:translateX(-122px)}to{transform:translateX(0)}}
 @keyframes blink{50%{opacity:0}}
 @keyframes runB{from{width:0px}to{width:330px}}
-@keyframes runA{from{width:0px}to{width:21.4px}}
+@keyframes runA{from{width:0px}to{width:330px}}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion: reduce){*{animation-duration:0.01ms !important;animation-iteration-count:1 !important;animation-delay:0s !important}}
 </style>
@@ -29,9 +29,9 @@
 <text class="mono rise" x="56" y="52" font-size="14" fill="#8A63D2" letter-spacing="1.2">Agent Skill</text>
 <text class="mono rise d1" x="56" y="104" font-size="52" fill="#e6edf3">testprune</text>
 
-<text class="sans rise d2" x="56" y="150" font-size="19" fill="#adbac7">Agent Skill for test suite cleanup: delete the obsolete tests</text>
-<text class="sans rise d2" x="56" y="176" font-size="19" fill="#adbac7">that no longer describe production, and stop waiting on the</text>
-<text class="sans rise d2" x="56" y="202" font-size="19" fill="#adbac7">check you run after every edit</text>
+<text class="sans rise d2" x="56" y="150" font-size="19" fill="#adbac7">Agent Skill for test suite optimization: cut a bloated suite</text>
+<text class="sans rise d2" x="56" y="176" font-size="19" fill="#adbac7">down to a check that finishes in seconds, without thinning</text>
+<text class="sans rise d2" x="56" y="202" font-size="19" fill="#adbac7">the coverage that matters</text>
 
 <rect class="rise d3" x="56" y="230" width="340" height="46" rx="8" fill="#161b22" stroke="#30363d"/>
 <text class="mono" x="78" y="260" font-size="20" fill="#6e7681">$</text>
@@ -53,14 +53,14 @@
 <text class="mono" x="790" y="180" font-size="14" fill="#8b949e" text-anchor="end">before</text>
 <rect x="810" y="160" width="330" height="28" rx="4" fill="#21262d"/>
 <rect class="raceB" x="810" y="160" width="330" height="28" rx="4" fill="#7d8590"/>
-<text class="mono lateB" x="826" y="180" font-size="17" fill="#0d1117">41.90 s</text>
+<text class="mono lateB" x="826" y="180" font-size="17" fill="#0d1117">24 min</text>
 
 <text class="mono" x="790" y="220" font-size="14" fill="#8b949e" text-anchor="end">after</text>
-<rect x="810" y="200" width="330" height="28" rx="4" fill="none" stroke="#21262d" stroke-dasharray="5 5"/>
-<rect class="raceA" x="810" y="200" width="21.4" height="28" rx="4" fill="#3fb950"/>
-<text class="mono lateA" x="845" y="220" font-size="17" fill="#3fb950">2.72 s</text>
+<rect x="810" y="200" width="330" height="28" rx="4" fill="#21262d"/>
+<rect class="raceA" x="810" y="200" width="330" height="28" rx="4" fill="#3fb950"/>
+<text class="mono lateA" x="826" y="220" font-size="17" fill="#0d1117">10 s</text>
 
-<text class="mono punch" x="700" y="292" font-size="48" fill="#3fb950">15.4x faster</text>
+<text class="mono punch" x="700" y="292" font-size="48" fill="#3fb950">144x faster</text>
 <text class="mono punch" x="700" y="318" font-size="13" fill="#6e7681">measured on one repository, before and after</text>
 </g>
 <text class="mono rise d3" x="56" y="400" font-size="12" fill="#6e7681">Language-agnostic · No paid or networked calls · Every deletion recoverable · Never changes runtime behavior</text>
