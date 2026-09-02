@@ -1,12 +1,12 @@
 # testprune
 
-> testprune is a Claude Code skill that audits a repository's automated test suite, removes the obsolete tests that no longer describe production, retargets the invariants worth keeping at the production code path, and builds layered gates so a routine check finishes in seconds instead of minutes. It ends by writing a test policy into `CLAUDE.md` and `AGENTS.md` so coding agents stop reaching for the full suite. It runs once against a repository rather than continuously in CI, it never changes production runtime behavior, and every deletion is recoverable from the commit hash it records.
+> testprune is an Agent Skill that audits a repository's automated test suite, removes the obsolete tests that no longer describe production, retargets the invariants worth keeping at the production code path, and builds layered gates so a routine check finishes in seconds instead of minutes. It ends by writing a test policy into `CLAUDE.md` and `AGENTS.md` so coding agents stop reaching for the full suite. It runs once against a repository rather than continuously in CI, it never changes production runtime behavior, and every deletion is recoverable from the commit hash it records.
 
-Install by cloning the repository into `~/.claude/skills/testprune`, then invoke it in a Claude Code session opened on the target repository with `/testprune` (audit and execute), `/testprune prompt-first` (write a curated repo-specific prompt and change nothing), or `/testprune followups` (execute high-blast-radius items a prior pass deferred). It produces a layered gate script, corrected and retargeted tests, an updated testing document, a policy block in `CLAUDE.md` and `AGENTS.md`, a ledger of every deletion with its git recovery hash, and a final report with measured before-and-after numbers.
+testprune is an Agent Skill, an open format originally developed by Anthropic and adopted by other agent clients, so the same folder works unchanged across them. Install by cloning the repository into `~/.claude/skills/testprune` for Claude Code, or `~/.agents/skills/testprune` for Codex CLI, then invoke it in a session opened on the target repository with `/testprune` (audit and execute), `/testprune prompt-first` (write a curated repo-specific prompt and change nothing), or `/testprune followups` (execute high-blast-radius items a prior pass deferred). It produces a layered gate script, corrected and retargeted tests, an updated testing document, a policy block in `CLAUDE.md` and `AGENTS.md`, a ledger of every deletion with its git recovery hash, and a final report with measured before-and-after numbers.
 
 It is language-agnostic in design and works with any test runner, though the reference examples are Python and pytest, so other stacks require adapting commands rather than concepts. It is not a test impact analysis or predictive test selection service, not a flaky-test detector or quarantine system, not a coverage or mutation-testing tool, and not an implementation of formal test-suite minimization research.
 
-Evidence status: the only measured result published for this skill is a single-repository before-and-after (a 24-minute suite with 186 stale failures became a 10-second fast gate with zero failures and a 10-minute broad gate with 33 classified pre-existing failures). That is one case, not a benchmark. The skill has not been evaluated on SWE-bench or any public benchmark, and no claim is made about its effect on agent regression rates.
+Evidence status: the only measured result published for this Skill is a single-repository before-and-after (a 24-minute suite with 186 stale failures became a 10-second fast gate with zero failures and a 10-minute broad gate with 33 classified pre-existing failures). That is one case, not a benchmark. The Skill has not been evaluated on SWE-bench or any public benchmark, and no claim is made about its effect on agent regression rates.
 
 ## Docs
 
@@ -45,9 +45,9 @@ Mode definitions: [prompt_creator.md](https://raw.githubusercontent.com/NeuraCer
 ## Key facts
 
 - License: MIT
-- Platforms: any operating system running Claude Code; requires `git`, `bash` 3.2 or newer, and Python 3.7 or newer for the inventory script
-- Install: `git clone https://github.com/NeuraCerebra-AI/testprune.git ~/.claude/skills/testprune`
+- Platforms: any operating system running a client that supports Agent Skills, verified with Claude Code and Codex CLI; requires `git`, `bash` 3.2 or newer, and Python 3.7 or newer for the inventory script
+- Install: `git clone https://github.com/NeuraCerebra-AI/testprune.git ~/.claude/skills/testprune` (Claude Code) or `~/.agents/skills/testprune` (Codex CLI)
 - Invocation: `/testprune`, `/testprune prompt-first`, `/testprune followups`
-- Model invocation: disabled by default (`disable-model-invocation: true`), because the skill deletes tests
+- Model invocation: disabled by default in Claude Code (`disable-model-invocation: true`), because the Skill deletes tests; other clients ignore that field
 - Output: a layered gate script, retargeted tests, an updated testing document, a `CLAUDE.md` and `AGENTS.md` policy block, a deletion ledger with git recovery hashes, and a measured final report
 - Repository: https://github.com/NeuraCerebra-AI/testprune

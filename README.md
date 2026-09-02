@@ -1,13 +1,17 @@
 <div align="center">
 
+<img src="assets/banner.svg" alt="testprune: an Agent Skill for test suite cleanup that deletes obsolete tests, retargets real invariants at the production path, and leaves behind a fast gate, subsystem gates, a broad gate, a policy block in CLAUDE.md and AGENTS.md, and a ledger of every deletion. Type slash testprune to run it." width="100%">
+
 # testprune
 
-### Test suite cleanup for Claude Code: delete the obsolete tests that no longer describe production, and get a routine check that finishes in seconds instead of minutes
+### Agent Skill for test suite cleanup: delete the obsolete tests that no longer describe production, and get a routine check that finishes in seconds instead of minutes
 
-Clone it into `~/.claude/skills/`, open a repo, and run `/testprune`.
+Clone it into your agent's Skills folder, open a repo, and run `/testprune`.
+
+Works in Claude Code and Codex CLI, and in other clients that implement the [Agent Skills open standard](https://github.com/agentskills/agentskills).
 
 [![Released under the MIT license.](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![This is a Claude Code skill.](https://img.shields.io/badge/Claude%20Code-skill-8A63D2.svg)](https://docs.claude.com/en/docs/claude-code/skills)
+[![This is an Agent Skill.](https://img.shields.io/badge/Agent%20Skill-open%20standard-8A63D2.svg)](https://github.com/agentskills/agentskills)
 [![The current version is 1.2.0.](https://img.shields.io/badge/version-1.2.0-lightgrey.svg)](SKILL.md)
 
 **Language-agnostic · No paid or networked calls · Every deletion recoverable · Never changes runtime behavior**
@@ -16,7 +20,7 @@ Clone it into `~/.claude/skills/`, open a repo, and run `/testprune`.
 
 ---
 
-> testprune is a Claude Code skill that audits a repository's automated test suite, removes the obsolete tests that no longer describe production, retargets the invariants worth keeping at the production code path, and builds layered gates so a routine check finishes in seconds instead of minutes. It ends by writing a test policy into `CLAUDE.md` and `AGENTS.md` so coding agents stop reaching for the full suite. It runs once against a repository rather than continuously in CI, it never changes production runtime behavior, and every deletion is recoverable from the commit hash it records.
+> testprune is an Agent Skill that audits a repository's automated test suite, removes the obsolete tests that no longer describe production, retargets the invariants worth keeping at the production code path, and builds layered gates so a routine check finishes in seconds instead of minutes. It ends by writing a test policy into `CLAUDE.md` and `AGENTS.md` so coding agents stop reaching for the full suite. It runs once against a repository rather than continuously in CI, it never changes production runtime behavior, and every deletion is recoverable from the commit hash it records.
 
 ## 🧹 The problem
 
@@ -35,7 +39,9 @@ scripts/run_test_gates.sh subsystem api     # one owning boundary
 scripts/run_test_gates.sh broad             # everything provider-free, before a push
 ```
 
-Here is the policy block it wrote into `CLAUDE.md` and `AGENTS.md` in the repository this skill was built on, so the next agent session reaches for the fast gate instead of the whole suite:
+<img src="assets/gates.svg" alt="Test gate layers before and after: a 24 minute whole-suite run with 186 failures becomes a fast gate of an explicit file list with zero known failures at 10 seconds, a subsystem gate for one owning boundary that was not separately measured, and a broad provider-free gate at 10 minutes with 33 classified pre-existing failures. Measured on one repository, not a benchmark." width="100%">
+
+Here is the policy block it wrote into `CLAUDE.md` and `AGENTS.md` in the repository this Skill was built on, so the next agent session reaches for the fast gate instead of the whole suite:
 
 ```markdown
 ## Test suite policy
@@ -62,11 +68,17 @@ Twenty-three deprecated and historical test files went with `git rm`, four untra
 
 ## ⚡ Install and run
 
+Claude Code reads personal Skills from `~/.claude/skills/`, and Codex reads them from `~/.agents/skills/`. Clone into whichever your client uses:
+
 ```bash
+# Claude Code
 git clone https://github.com/NeuraCerebra-AI/testprune.git ~/.claude/skills/testprune
+
+# Codex CLI
+git clone https://github.com/NeuraCerebra-AI/testprune.git ~/.agents/skills/testprune
 ```
 
-Then, in a Claude Code session opened on the repository you want cleaned:
+Then, in a session opened on the repository you want cleaned:
 
 ```
 /testprune                 # audit and execute in this session, budget about two hours
@@ -76,7 +88,7 @@ Then, in a Claude Code session opened on the repository you want cleaned:
 
 Start with `prompt-first` if you'd rather read the plan before anything is deleted. It produces a repo-specific audit prompt and a companion follow-up prompt, and it touches no test.
 
-Requirements: Claude Code, `git`, `bash` 3.2 or newer for the gate script, and Python 3.7 or newer for the inventory script. The skill itself is language-agnostic; only that one helper script needs Python.
+Requirements: a client that supports Agent Skills (Claude Code or Codex CLI, for example), `git`, `bash` 3.2 or newer for the gate script, and Python 3.7 or newer for the inventory script. The Skill itself is language-agnostic; only that one helper script needs Python.
 
 ## 🔍 How it works
 
@@ -86,15 +98,17 @@ The run is an audit, then a set of decisions, then a measurement. It follows a 1
 
 **Then it classifies every test module into exactly one bucket:** production coverage, deprecated-path coverage, historical or stale-intent, live/paid/credentialed, environment-dependent, duplicated, or untracked ad hoc. Classification is by what a test proves, not by the vocabulary in its fixtures. A test that inserts rows in a retired format and asserts they still open is production coverage, not deprecated-path coverage, and it stays.
 
+<img src="assets/classify.svg" alt="How testprune classifies tests: seven buckets, production coverage, deprecated-path coverage, historical or stale-intent, live paid credentialed, environment-dependent, duplicated and untracked ad hoc, pass through a production authority check and route to one of three outcomes, keep, retarget the invariant first, or remove recoverably with git rm. A permanently red test with no source authority is left red and listed." width="100%">
+
 **Before anything is deleted, real invariants are retargeted.** A bad test can still be the only thing pinning a real guarantee. Those get one focused test each against the production path first, in the repo's own offline harness and its neighbors' style, and only then does the original go.
 
 **Removal is recoverable, never hidden.** Tracked files go with `git rm` and the recovery commit hash lands in the ledger. Untracked files move to a gitignored archive, because deleting an untracked file can't be undone. No skip markers, no root conftest skip machinery, no xfail-forever, because those preserve the scrolling instead of ending it.
 
-It also runs [`scripts/test_inventory.py`](scripts/test_inventory.py) early, which exists for one reason: git ignore rules control commits, not collection. In the repository this skill was built from, 74 gitignored test modules still ran in every broad run and were invisible to anyone reading `git ls-files`.
+It also runs [`scripts/test_inventory.py`](scripts/test_inventory.py) early, which exists for one reason: git ignore rules control commits, not collection. In the repository this Skill was built from, 74 gitignored test modules still ran in every broad run and were invisible to anyone reading `git ls-files`.
 
 ## 🚧 What it won't do
 
-The boundaries are rules in `SKILL.md`, copied verbatim into any prompt the skill writes.
+The boundaries are rules in `SKILL.md`, copied verbatim into any prompt the Skill writes.
 
 - **No runtime changes.** It never changes application logic to make a test pass, and it never deletes the deprecated implementation itself. In `followups` mode a comment-only edit to a production file is possible when a stale comment is the thing that's wrong, and the report says so explicitly. Anything that would change behavior is parked as a product decision instead.
 - **No paid calls.** No test that claims to be offline may reach a paid, networked, or credentialed service, and the run proves zero calls afterwards rather than assuming them.
@@ -135,7 +149,7 @@ Two caveats, stated plainly because they matter. That paper evaluates a dependen
 Make the routine check a short, explicit list of files with zero known failures, and write that command into `CLAUDE.md` or `AGENTS.md` as the default. testprune builds that list, measures it, and writes the policy. The fast gate is an explicit file list rather than a glob or a marker, because a glob drifts and can wander into an ignored, live, or environment-dependent test.
 
 **Is it safe to let an AI delete my tests?**
-Deletions are recoverable and the run is auditable, which is the honest version of "safe". Tracked tests go with `git rm` and the ledger records the commit hash you restore from. Untracked tests move to a gitignored archive rather than being deleted, because that operation isn't reversible. The skill is user-invoked only (`disable-model-invocation: true` in `SKILL.md`) so Claude can't start it on its own. To read the plan before anything moves, run `/testprune prompt-first`, which changes nothing.
+Deletions are recoverable and the run is auditable, which is the honest version of "safe". Tracked tests go with `git rm` and the ledger records the commit hash you restore from. Untracked tests move to a gitignored archive rather than being deleted, because that operation isn't reversible. In Claude Code it is user-invoked only (`disable-model-invocation: true` in `SKILL.md`), so Claude can't start it on its own. To read the plan before anything moves, run `/testprune prompt-first`, which changes nothing.
 
 **How do I know which tests are safe to delete?**
 A test becomes a deletion candidate when it exercises an implementation that production doesn't route through, or when it pins wording, numbering, pricing, or model names that the source is expected to keep changing. Both require naming the production path first, with file-level proof. A test that is merely failing is not a candidate: a permanently red test whose expectation can't be corrected with source authority is left red and listed rather than quietly removed.
@@ -148,6 +162,9 @@ Those tools decide which of your existing tests to run for a given commit, every
 
 **How do I stop Claude Code from running the entire test suite on every small change?**
 Give Claude Code a faster default and say so in the file it reads first. Agents read `CLAUDE.md` or `AGENTS.md` before anything else, so a 10-second gate saves nobody time until that file points at it. The policy block puts the gate commands at the top of the commands list and states plainly that the raw full-suite command is not a routine check.
+
+**Does it work with Codex, or only Claude Code?**
+Both. It is an Agent Skill, an open format originally developed by Anthropic and since adopted by other agent clients, so the same `SKILL.md` folder works unchanged in either. Claude Code loads personal Skills from `~/.claude/skills/`, Codex from `~/.agents/skills/`, and both derive the `/testprune` command from the folder name. The one Claude Code specific detail is the `disable-model-invocation: true` line in the frontmatter, which other clients ignore.
 
 **What if I disagree with one of its decisions?**
 Every deletion is listed in the ledger with its recovery hash, and every corrected expectation is listed with the source authority that justified it. Restoring one file is `git show <hash>:path/to/test.py > path/to/test.py`. Items where the evidence wasn't conclusive are written as `Confirm needed` with the competing authorities quoted, and neither side is changed.
