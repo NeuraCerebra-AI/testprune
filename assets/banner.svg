@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 430" width="1200" height="430" role="img" aria-labelledby="bt bd">
 <title id="bt">testprune</title>
-<desc id="bd">A dark panel showing the name testprune, its tagline, and the command slash testprune being typed at a prompt, with chips for the five things a run leaves behind: the fast gate, subsystem gates, the broad gate, the policy block it writes into CLAUDE.md and AGENTS.md, and the ledger of every deletion. On the right a schematic tree stands for the test suite: three green branches are production coverage that stays, three dashed grey branches are obsolete tests that fade to a faint ghost because every deletion stays recoverable from git, and an amber ring on the trunk marks an invariant retargeted at the production path before its test was removed.</desc>
+<desc id="bd">A dark panel showing the name testprune, its tagline, and the command slash testprune being typed at a prompt, with chips for the five things a run leaves behind: the fast gate, subsystem gates, the broad gate, the policy block it writes into CLAUDE.md and AGENTS.md, and the ledger of every deletion. On the right, two bars race in real time at the true measured ratio: the routine check an agent runs after every edit took 41.90 seconds before and 2.72 seconds after, so the grey before bar crawls across its track while the green after bar is finished almost at once. The result is stated beneath them: 15.4x faster, measured on one repository before and after.</desc>
 <style>
 .sans{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
 .mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace}
@@ -9,19 +9,19 @@
 .chip{animation:rise .5s ease-out both}
 .c1{animation-delay:1.9s}.c2{animation-delay:2s}.c3{animation-delay:2.1s}.c4{animation-delay:2.2s}.c5{animation-delay:2.3s}
 .typeclip{animation:typew 1.5s steps(10,end) .6s both}
-.cursor{animation:curs 1.5s steps(10,end) .6s both,blink 1.05s step-end 2.1s infinite}
-.dead{animation:wither 1.4s ease-in both}
-.w1{animation-delay:2.5s}.w2{animation-delay:2.75s}.w3{animation-delay:3s}
-.leaf{animation:bob 3.4s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
-.l2{animation-duration:3.9s}.l3{animation-duration:4.4s}.l4{animation-duration:3.1s}
-.ring{animation:ringin .6s ease-out 3.4s both;transform-box:fill-box;transform-origin:center}
+.cursor{animation:curs 1.5s steps(10,end) .6s both,blink 1.05s step-end 2.1s 6 both}
+.raceB{animation:runB 3.8s linear .9s both}
+.raceA{animation:runA .247s linear .9s both}
+.lateB{animation:fade .5s ease-out 4.7s both}
+.lateA{animation:fade .5s ease-out 1.15s both}
+.punch{animation:rise .7s ease-out 5.1s both}
 @keyframes rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
 @keyframes typew{from{width:0px}to{width:122px}}
 @keyframes curs{from{transform:translateX(-122px)}to{transform:translateX(0)}}
 @keyframes blink{50%{opacity:0}}
-@keyframes wither{from{opacity:1}to{opacity:.14}}
-@keyframes bob{from{transform:translateY(-1.5px)}to{transform:translateY(1.5px)}}
-@keyframes ringin{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+@keyframes runB{from{width:0px}to{width:330px}}
+@keyframes runA{from{width:0px}to{width:21.4px}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion: reduce){*{animation-duration:0.01ms !important;animation-iteration-count:1 !important;animation-delay:0s !important}}
 </style>
 <rect x="8" y="8" width="1184" height="414" rx="16" fill="#0d1117" stroke="#30363d"/>
@@ -48,30 +48,20 @@
 </g>
 
 <g class="rise d2">
-<line x1="880" y1="62" x2="880" y2="258" stroke="#e6edf3" stroke-width="3" stroke-linecap="round"/>
-<line x1="842" y1="260" x2="918" y2="260" stroke="#484f58" stroke-width="2" stroke-linecap="round"/>
-<text class="mono" x="880" y="282" font-size="16" fill="#8b949e" text-anchor="middle">production path</text>
+<text class="mono" x="700" y="140" font-size="14" fill="#8b949e">Routine check after every edit</text>
 
-<path d="M880 238 C 840 236 808 224 768 206" fill="none" stroke="#3fb950" stroke-width="2.5" stroke-linecap="round"/>
-<circle class="leaf" cx="762" cy="203" r="8" fill="#3fb950"/>
-<path d="M880 148 C 920 146 952 136 992 120" fill="none" stroke="#3fb950" stroke-width="2.5" stroke-linecap="round"/>
-<circle class="leaf l2" cx="998" cy="117" r="8" fill="#3fb950"/>
-<path d="M880 92 C 914 90 942 82 978 70" fill="none" stroke="#3fb950" stroke-width="2.5" stroke-linecap="round"/>
-<circle class="leaf l3" cx="984" cy="67" r="8" fill="#3fb950"/>
-<circle class="leaf l4" cx="880" cy="56" r="8" fill="#3fb950"/>
+<text class="mono" x="790" y="180" font-size="14" fill="#8b949e" text-anchor="end">before</text>
+<rect x="810" y="160" width="330" height="28" rx="4" fill="#21262d"/>
+<rect class="raceB" x="810" y="160" width="330" height="28" rx="4" fill="#7d8590"/>
+<text class="mono lateB" x="826" y="180" font-size="17" fill="#0d1117">41.90 s</text>
 
-<g class="dead w1"><path d="M880 208 C 920 206 952 196 992 178" fill="none" stroke="#6e7681" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round"/><circle cx="998" cy="175" r="5" fill="none" stroke="#6e7681" stroke-width="1.6"/></g>
-<g class="dead w2"><path d="M880 178 C 840 176 808 166 768 150" fill="none" stroke="#6e7681" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round"/><circle cx="762" cy="147" r="5" fill="none" stroke="#6e7681" stroke-width="1.6"/></g>
-<g class="dead w3"><path d="M880 118 C 846 116 818 108 782 94" fill="none" stroke="#6e7681" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round"/><circle cx="776" cy="91" r="5" fill="none" stroke="#6e7681" stroke-width="1.6"/></g>
+<text class="mono" x="790" y="220" font-size="14" fill="#8b949e" text-anchor="end">after</text>
+<rect x="810" y="200" width="330" height="28" rx="4" fill="none" stroke="#21262d" stroke-dasharray="5 5"/>
+<rect class="raceA" x="810" y="200" width="21.4" height="28" rx="4" fill="#3fb950"/>
+<text class="mono lateA" x="845" y="220" font-size="17" fill="#3fb950">2.72 s</text>
 
-<circle class="ring" cx="880" cy="178" r="9" fill="none" stroke="#d29922" stroke-width="2.5"/>
+<text class="mono punch" x="700" y="292" font-size="48" fill="#3fb950">15.4x faster</text>
+<text class="mono punch" x="700" y="318" font-size="13" fill="#6e7681">measured on one repository, before and after</text>
 </g>
-
-<g class="mono rise d3" font-size="13">
-<circle cx="708" cy="306" r="6" fill="#3fb950"/><text x="726" y="311" fill="#8b949e">production coverage stays</text>
-<line x1="700" y1="330" x2="716" y2="330" stroke="#6e7681" stroke-width="2" stroke-dasharray="4 4"/><text x="726" y="335" fill="#8b949e">obsolete tests go, recoverable from git</text>
-<circle cx="708" cy="354" r="6" fill="none" stroke="#d29922" stroke-width="2"/><text x="726" y="359" fill="#8b949e">invariant retargeted before removal</text>
-</g>
-
 <text class="mono rise d3" x="56" y="400" font-size="12" fill="#6e7681">Language-agnostic · No paid or networked calls · Every deletion recoverable · Never changes runtime behavior</text>
 </svg>

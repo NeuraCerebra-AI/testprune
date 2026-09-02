@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/banner.svg" alt="testprune: an Agent Skill for test suite cleanup that deletes obsolete tests, retargets real invariants at the production path, and leaves behind a fast gate, subsystem gates, a broad gate, a policy block in CLAUDE.md and AGENTS.md, and a ledger of every deletion. Type slash testprune to run it." width="100%">
+<img src="assets/banner.svg" alt="testprune: an Agent Skill for test suite cleanup that cuts the wait between an edit and its test result. In one measured repository the routine check went from 41.90 seconds to 2.72 seconds, 15.4x faster, shown as two bars racing at that true ratio. It deletes obsolete tests and leaves behind a fast gate, subsystem gates, a broad gate, a policy block, and a ledger. Type slash testprune to run it." width="100%">
 
 # testprune
 
@@ -26,7 +26,7 @@ Works in Claude Code and Codex CLI, and in other clients that implement the [Age
 
 This is the reason to run it. Everything else on this page exists to make the speedup safe rather than a trick, because a fast gate is only worth having if green still means something.
 
-In the second of two repositories, the routine check an agent runs after every edit went from 41.90 seconds to 2.72 seconds. That is a 93.5% cut in feedback latency, or 15.4 times faster.
+In the second of two repositories, the routine check an agent runs after every edit went from 41.90 seconds to 2.72 seconds. That is a 93.5% cut in feedback latency, or 15.4x faster.
 
 <img src="assets/time-saved.svg" alt="Time saved on the routine test check: it drops from 41.90 seconds to 2.72 seconds, which is 15.4 times faster and a 93.5 percent cut in feedback latency, giving back 6 minutes 32 seconds across ten edit and test cycles. Measured on one repository, not a benchmark." width="100%">
 
@@ -37,7 +37,7 @@ In the second of two repositories, the routine check an agent runs after every e
 | Ten cycles | 6m 59s | 27.2 s | 6m 32s |
 | Twenty cycles | 13m 58s | 54.4 s | 13m 04s |
 
-The ratio is fixed, so the saving compounds with how often you run the check, and an agent runs it constantly. A realistic session of ten fast iterations, one subsystem check, and one broad pre-push check now takes about 2 minutes 24 seconds. The same ten iterations alone used to cost about 7 minutes, before any release-level verification ran at all.
+The saving is paid out per cycle, so it scales with how often the check runs, and an agent runs it constantly. A realistic session of ten fast iterations, one subsystem check, and one broad pre-push check now takes about 2 minutes 24 seconds. The same ten cycles alone used to cost 6 minutes 59 seconds, before the broad gate ran at all.
 
 <details><summary>Per-subsystem numbers from the same repository</summary>
 
@@ -229,7 +229,7 @@ Every rule in `SKILL.md` traces back to something that went wrong in one of thos
 
 ## 🤝 Contributing and license
 
-Issues and pull requests are welcome, particularly reports from stacks other than Python and JavaScript, since that's where the reference examples are thinnest. If a rule fails you in a real repository, the most useful thing you can open is the case that broke it.
+Issues and pull requests are welcome, particularly reports from stacks other than Python and pytest, since that's where the reference examples are thinnest. If a rule fails you in a real repository, the most useful thing you can open is the case that broke it.
 
 Released under the [MIT License](LICENSE).
 
