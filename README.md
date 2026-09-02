@@ -4,7 +4,7 @@
 
 # testprune
 
-### Agent Skill for test suite cleanup: delete the obsolete tests that no longer describe production, and get a routine check that finishes in seconds instead of minutes
+### Agent Skill for test suite cleanup: delete the obsolete tests that no longer describe production, and stop waiting on the check you run after every edit
 
 Clone it into your agent's Skills folder, open a repo, and run `/testprune`.
 
@@ -21,6 +21,44 @@ Works in Claude Code and Codex CLI, and in other clients that implement the [Age
 ---
 
 > testprune is an Agent Skill that audits a repository's automated test suite, removes the obsolete tests that no longer describe production, retargets the invariants worth keeping at the production code path, and builds layered gates so a routine check finishes in seconds instead of minutes. It ends by writing a test policy into `CLAUDE.md` and `AGENTS.md` so coding agents stop reaching for the full suite. It runs once against a repository rather than continuously in CI, it never changes production runtime behavior, and every deletion is recoverable from the commit hash it records.
+
+## ⏱️ The time it gives back
+
+This is the reason to run it. Everything else on this page exists to make the speedup safe rather than a trick, because a fast gate is only worth having if green still means something.
+
+In the second of two repositories, the routine check an agent runs after every edit went from 41.90 seconds to 2.72 seconds. That is a 93.5% cut in feedback latency, or 15.4 times faster.
+
+<img src="assets/time-saved.svg" alt="Time saved on the routine test check: it drops from 41.90 seconds to 2.72 seconds, which is 15.4 times faster and a 93.5 percent cut in feedback latency, giving back 6 minutes 32 seconds across ten edit and test cycles. Measured on one repository, not a benchmark." width="100%">
+
+| Edit and test cycles | Before | After | Saved |
+| --- | ---: | ---: | ---: |
+| One cycle | 41.90 s | 2.72 s | 39.18 s |
+| Five cycles | 3m 30s | 13.6 s | 3m 16s |
+| Ten cycles | 6m 59s | 27.2 s | 6m 32s |
+| Twenty cycles | 13m 58s | 54.4 s | 13m 04s |
+
+The ratio is fixed, so the saving compounds with how often you run the check, and an agent runs it constantly. A realistic session of ten fast iterations, one subsystem check, and one broad pre-push check now takes about 2 minutes 24 seconds. The same ten iterations alone used to cost about 7 minutes, before any release-level verification ran at all.
+
+<details><summary>Per-subsystem numbers from the same repository</summary>
+
+Ten fast iterations plus one subsystem check, measured against ten of the old routine checks:
+
+| Work area | New total | Saved |
+| --- | ---: | ---: |
+| Runtime | 32.9 s | 6m 26s |
+| Research | 31.8 s | 6m 27s |
+| Artifacts | 35.9 s | 6m 23s |
+| Studio | 47.7 s | 6m 11s |
+| Responsible AI | 40.2 s | 6m 19s |
+| Environment | 50.8 s | 6m 08s |
+
+The broad gate stays at 111 seconds and is an intentional pre-push cost, not a routine one.
+
+</details>
+
+The first repository was a heavier case: a 24-minute suite carrying 186 stale failures became a 10-second fast gate with zero failures. Different starting points, the same shape of result.
+
+Both are measured single cases, not benchmarks. Your suite's numbers will differ.
 
 ## 🧹 The problem
 
@@ -55,7 +93,7 @@ Here is the policy block it wrote into `CLAUDE.md` and `AGENTS.md` in the reposi
 - Removal standard: no skip markers, no root conftest skip machinery, no xfail-forever.
 ```
 
-And here is what changed in that repository, taken from tool output during the run. **This is one case, not a benchmark.** Your repository will differ, and no equivalent measurement exists across a range of codebases yet.
+And here is what changed in that first repository, taken from tool output during the run. **This is one case, not a benchmark.** Your repository will differ.
 
 | Run | Before | After |
 | --- | --- | --- |
@@ -185,7 +223,7 @@ Every deletion is listed in the ledger with its recovery hash, and every correct
 
 ## 📜 Where it came from
 
-It was built from a real cleanup and then hardened by a second one, both on private repositories. The first pass produced the measured numbers above. The second pass, on a different repository, added `followups` mode, which closed five deferred findings: a comment, code, and test that disagreed about provider fallback; a backend that configuration admitted but every workflow refused; a dead transport still wired into a route; legacy-row tests mistaken for deprecated coverage; and a release verifier that had to be repointed. That pass produced one comment-only production edit, four new tests, and zero runtime changes.
+It was built from a real cleanup and then hardened by a second one, both on private repositories. The second pass added `followups` mode, which closed five deferred findings: a comment, code, and test that disagreed about provider fallback; a backend that configuration admitted but every workflow refused; a dead transport still wired into a route; legacy-row tests mistaken for deprecated coverage; and a release verifier that had to be repointed. That pass produced one comment-only production edit, four new tests, and zero runtime changes.
 
 Every rule in `SKILL.md` traces back to something that went wrong in one of those two repositories. The reasoning is written down in [`references/rationale_and_pitfalls.md`](references/rationale_and_pitfalls.md), so you can disagree with a rule on the merits rather than guessing at its intent.
 

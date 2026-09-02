@@ -6,7 +6,9 @@ testprune is an Agent Skill, an open format originally developed by Anthropic an
 
 It is language-agnostic in design and works with any test runner, though the reference examples are Python and pytest, so other stacks require adapting commands rather than concepts. It is not a test impact analysis or predictive test selection service, not a flaky-test detector or quarantine system, not a coverage or mutation-testing tool, and not an implementation of formal test-suite minimization research.
 
-Evidence status: the only measured result published for this Skill is a single-repository before-and-after (a 24-minute suite with 186 stale failures became a 10-second fast gate with zero failures and a 10-minute broad gate with 33 classified pre-existing failures). That is one case, not a benchmark. The Skill has not been evaluated on SWE-bench or any public benchmark, and no claim is made about its effect on agent regression rates.
+Primary benefit: it removes waiting time from the edit and test cycle. In one measured repository the routine check an agent runs after every edit went from 41.90 seconds to 2.72 seconds, a 93.5% cut in feedback latency or 15.4 times faster, giving back 6 minutes 32 seconds across ten cycles and 13 minutes 4 seconds across twenty. In a second, heavier repository a 24-minute suite carrying 186 stale failures became a 10-second fast gate with zero failures and a 10-minute broad gate with 33 classified pre-existing failures.
+
+Evidence status: those are two measured single cases, not benchmarks, and another suite's numbers will differ. The Skill has not been evaluated on SWE-bench or any public benchmark, and no claim is made about its effect on agent regression rates.
 
 ## Docs
 

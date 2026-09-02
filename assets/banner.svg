@@ -29,9 +29,9 @@
 <text class="mono rise" x="56" y="52" font-size="14" fill="#8A63D2" letter-spacing="1.2">Agent Skill</text>
 <text class="mono rise d1" x="56" y="104" font-size="52" fill="#e6edf3">testprune</text>
 
-<text class="sans rise d2" x="56" y="150" font-size="19" fill="#adbac7">Agent Skill for test suite cleanup: delete the obsolete</text>
-<text class="sans rise d2" x="56" y="176" font-size="19" fill="#adbac7">tests that no longer describe production, and get a routine</text>
-<text class="sans rise d2" x="56" y="202" font-size="19" fill="#adbac7">check that finishes in seconds instead of minutes</text>
+<text class="sans rise d2" x="56" y="150" font-size="19" fill="#adbac7">Agent Skill for test suite cleanup: delete the obsolete tests</text>
+<text class="sans rise d2" x="56" y="176" font-size="19" fill="#adbac7">that no longer describe production, and stop waiting on the</text>
+<text class="sans rise d2" x="56" y="202" font-size="19" fill="#adbac7">check you run after every edit</text>
 
 <rect class="rise d3" x="56" y="230" width="340" height="46" rx="8" fill="#161b22" stroke="#30363d"/>
 <text class="mono" x="78" y="260" font-size="20" fill="#6e7681">$</text>
